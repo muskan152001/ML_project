@@ -1,31 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Insect Detection</title>
-        <link rel="stylesheet" href="/static/style.css">
-    </head>
-    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insect Detection</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
 <body>
-    <h1>Upload an Image for Insect Detection</h1>
+    <h1>Insect Detection on Yellow Sticky Traps</h1>
     <form id="uploadForm" enctype="multipart/form-data">
         <input type="file" name="file" accept="image/*" required />
         <button type="submit">Upload</button>
     </form>
-    <div id="results"></div>
+    
+    <div id="images">
+        <div>
+            <h2>Uploaded Image:</h2>
+            <img id="uploadedImage" src="" alt="Uploaded Image" style="display: none;">
+        </div>
+        <div>
+            <h2>Result Image:</h2>
+            <img id="outputImage" src="" alt="Output Image" style="display: none;">
+        </div>
+    </div>
 
     <script>
         const form = document.getElementById('uploadForm');
+        const uploadedImage = document.getElementById('uploadedImage');
+        const outputImage = document.getElementById('outputImage');
+
         form.onsubmit = async (e) => {
             e.preventDefault();
-            const fileInput = form.querySelector('input[name="file"]');
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
 
+            const fileInput = form.querySelector('input[name="file"]');
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Display uploaded image
+            const reader = new FileReader();
+            reader.onload = () => {
+                uploadedImage.src = reader.result;
+                uploadedImage.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            // Send file to the server for prediction
             const response = await fetch('/predict', { method: 'POST', body: formData });
             const result = await response.json();
-            document.getElementById('results').innerText = JSON.stringify(result, null, 2);
+
+            // Display the result image
+            outputImage.src = `/${result.image_url}`;
+            outputImage.style.display = 'block';
         };
     </script>
 </body>
